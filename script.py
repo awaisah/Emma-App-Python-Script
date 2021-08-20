@@ -21,7 +21,8 @@ with open('occupations.json') as fOccupations, open('loremipsum.txt') as fLorem:
 # List of all items in the directory ending with ".png"
 files = filter(lambda filename: filename.decode('ascii').endswith(".png"), files)
 
-outputForJS = '{\n'
+# This will contain the text which will be used to output into requires.txt
+requiresForJS = '{\n'
 
 # Loop through every third element in the sorted list of images
 for filename in sorted(files)[::3]:
@@ -31,11 +32,11 @@ for filename in sorted(files)[::3]:
         # Create a dictionary for contact's details
         name = filename.split(".")[0]
 
+        # Javascript had an issue working with whitespace (' ') in require() so this is used to remove it
         safeName = name.replace(" ", "_")
 
-        outputForJS += '"'+name+'": require("./'+safeName+'.png"),\n'
+        requiresForJS += '"'+name+'": require("./'+safeName+'.png"),\n'
 
-        print(name)
         # Replace File Names for js
         os.rename("avatars/"+name+".png","avatars/"+safeName+".png")
         os.rename("avatars/"+name+"@2x.png","avatars/"+safeName+"@2x.png")
@@ -46,6 +47,7 @@ for filename in sorted(files)[::3]:
         for i in range(0,5):
             profile += lorem[random.randint(0,len(lorem)-1)]+". "
 
+        # Add to the contacts array. This will be the output for contacts.json
         contacts.append({
             "name": name,
             "imageName": safeName+".png",
@@ -53,13 +55,13 @@ for filename in sorted(files)[::3]:
             "profile": profile
         })
 
-outputForJS += "}"
+requiresForJS += "}"
 
 
 # Export the file 
-with io.open('contacts.json', 'w', encoding='utf-8') as f, io.open('output.txt', 'w', encoding='utf-8') as fOutput:
+with io.open('contacts.json', 'w', encoding='utf-8') as f, io.open('requires.txt', 'w', encoding='utf-8') as fRequires:
   f.write(json.dumps(contacts, indent=4))
-  fOutput.write(outputForJS)
-  print("SUCCESS: Exported contacts.json with contacts details")
+  fRequires.write(requiresForJS)
+  print("SUCCESS: Exported contacts.json with contacts details. Exported requires.txt with code to enter into the index.js file in the React Native project (assets/avatars/index.js file)")
   f.close()
-  fOutput.close()
+  fRequires.close()
